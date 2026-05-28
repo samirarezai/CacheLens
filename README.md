@@ -1,6 +1,6 @@
 # CacheLens
 
-![CacheLens Banner](./assets/cachlense.png)
+![CacheLens Banner](https://github.com/samirarezai/CacheLens/blob/main/src/assets/cachlense.png?raw=true)
 
 A modern Chromium cache explorer built with Tauri, Rust, and React.
 
