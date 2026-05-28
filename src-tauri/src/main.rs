@@ -18,8 +18,14 @@ struct CacheFile {
 #[tauri::command]
 fn get_chrome_cache_files() -> Vec<CacheFile> {
     
-    let path =
-        r"C:\Users\USER\AppData\Local\Google\Chrome\User Data\Default\Cache";
+ let local_app_data =
+    std::env::var("LOCALAPPDATA")
+        .unwrap();
+
+let path = format!(
+    "{}\\Google\\Chrome\\User Data\\Default\\Cache",
+    local_app_data
+);
 
     let mut files = vec![];
 
