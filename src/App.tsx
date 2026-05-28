@@ -1,67 +1,82 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import { invoke, isTauri } from "@tauri-apps/api/core";
-import "./App.css";
+import { invoke } from "@tauri-apps/api/core";
+import { useEffect, useState } from "react";
+
+type CacheFile = {
+  name: string;
+  path: string;
+  is_dir: boolean;
+  size: number;
+  content: string;
+  file_type: string;
+  image_base64: string;
+};
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+  const [files, setFiles] = useState<CacheFile[]>([]);
 
-  async function greet() {
-    if (!isTauri()) {
-      setGreetMsg(
-        "Greetings run in the Tauri desktop window only. Use `pnpm tauri dev` and click Greet there, not in a standalone browser tab.",
-      );
-      return;
-    }
-    try {
-      const message = await invoke<string>("greet", { name });
-      setGreetMsg(message);
-    } catch (e) {
-      const detail = e instanceof Error ? e.message : String(e);
-      setGreetMsg(`Could not call Rust: ${detail}`);
-    }
+  async function loadFiles() {
+    const result = await invoke<CacheFile[]>("get_chrome_cache_files");
+
+    setFiles(result);
   }
 
+  useEffect(() => {
+    loadFiles();
+  }, []);
+
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
+    <main>
+      <h1>Chrome Cache Files</h1>
 
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="table-container">
+        <table className="cache-table">
+          <thead>
+            <tr>
+              <th>Preview</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Size</th>
+              <th>Content</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {files.map((file) => (
+              <tr key={file.path}>
+                <td>
+                  {["png", "jpeg", "webp"].includes(file.file_type) ? (
+                    <img
+                      src={`data:image/${file.file_type};base64,${file.image_base64}`}
+                      className="preview-image"
+                      width={50}
+                    />
+                  ) : (
+                    <div className="file-icon">{file.is_dir ? "📁" : "📄"}</div>
+                  )}
+                </td>
+
+                <td>
+                  <div className="file-name">{file.name}</div>
+
+                  <div className="file-path">{file.path}</div>
+                </td>
+
+                <td>
+                  <span className="type-badge">{file.file_type}</span>
+                </td>
+
+                <td>{(file.size / 1024).toFixed(1)} KB</td>
+
+                <td>
+                  <pre className="content-preview">
+                    {file.content.slice(0, 80)}
+                  </pre>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p className="greet-output" aria-live="polite">
-        {greetMsg || (
-          <span className="greet-placeholder">
-            Click Greet to show a message from Rust (run the desktop app with{" "}
-            <code>pnpm tauri dev</code>, not only the browser).
-          </span>
-        )}
-      </p>
     </main>
   );
 }
