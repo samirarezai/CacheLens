@@ -1,10 +1,10 @@
 # CacheLens
 
+![CacheLens Banner](./assets/cachlense.png)
+
 A modern Chromium cache explorer built with Tauri, Rust, and React.
 
 CacheLens allows you to inspect Chrome cache files, preview cached images, analyze web assets, and explore browser storage through a fast native desktop application.
-
-![CacheLens Banner](./assets/cachlense.png)
 
 ---
 
